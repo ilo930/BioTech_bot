@@ -1,0 +1,36 @@
+name: BioTech reply bot
+
+# Answers DMs ("deeper", "tricks", "menu"). Each run listens ~5.5h; concurrency
+# keeps exactly one listener alive and the queued run takes over when it ends.
+# The hourly cron only restarts the chain if a run dies early.
+# Needs a PUBLIC repo to stay free (private repos get 2,000 Actions minutes/month;
+# an always-on listener uses ~43,000).
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: biotech-reply
+  cancel-in-progress: false
+
+permissions:
+  contents: read   # the listener only reads state/
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_SECONDS: '19800'
+        run: python poller.py
