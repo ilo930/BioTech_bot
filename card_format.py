@@ -5,6 +5,7 @@ All the look of the post lives here: section emojis, order, line breaks.
 
 import html
 
+import config
 import tricks
 
 HEADER = "🧪 <b>BIOTECH</b>"
@@ -51,5 +52,5 @@ def format_post(person, card, number, first_time_trick, source_urls):
         f"{s['next']} <b>What happened next</b>\n{esc(card.what_next)}",
         trick_block,
         f"{s['turn']} <b>Your turn</b>\n{esc(card.your_turn)}",
-        f"🔗 {sources}\n<i>DM the bot: </i><code>deeper</code><i> · </i><code>tricks</code>",
+        f"🔗 {sources}\n<i>Message @{config.BOT_USERNAME}: </i><code>deeper</code><i> · </i><code>tricks</code>",
     ])

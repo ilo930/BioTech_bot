@@ -1,7 +1,7 @@
 # Architecture
 
 ## What this project is
-BioTech: a Telegram bot that sends you one real inventor's story a week —
+BioTech: a Telegram channel (@xbiotechx) that posts one real inventor's story a week —
 what the invention is made of, why it works, and the reusable "trick" behind it —
 so the reader builds a toolbox for inventing. A DM bot answers `deeper` and `tricks`.
 
@@ -15,7 +15,7 @@ people.py ─► sources.py ─► writer.py ◄─► fact_check.py
  (who next)   (Wikipedia /   (AI writes)    (2nd AI: claims vs source)
               news text)         │
                                  ▼
-                          card_format.py ─► telegram.py ─► your DM
+                          card_format.py ─► telegram.py ─► @xbiotechx
                     story_bot.py wires them; state.py remembers who was posted
 DM ─► poller.py ─► reply_core.py ─► deeper (AI + stored source) / tricks (tricks.py + posted.json)
 ```
@@ -45,7 +45,8 @@ DM ─► poller.py ─► reply_core.py ─► deeper (AI + stored source) / tr
 ## Decisions
 - Fact-check pass added (2026-10-17). The first real card gave the orange's pectin to the avocado,
   listed "water" as an ingredient and invented farm trials. Prompt rules alone weren't enough.
-- Posts go to FH's private chat with the bot, no channel (his call 2026-10-17). TELEGRAM_CHAT_ID = his user id.
+- Posts go to the public channel @xbiotechx (FH tried his private chat first, then chose a channel 2026-10-17).
+  The bot is @MicroBioTech_bot; `deeper`/`tricks` work in a private chat with it.
 - Sources carry `must_mention` words. (Wikipedia rewrote Kiara Nirghin's page in 2026 and dropped the
   orange peel; a "Gitanjali Rao" title pointed to a different person. Without the gate the AI would invent.)
 - News URLs allowed as sources next to Wikipedia, for inventors Wikipedia covers badly.

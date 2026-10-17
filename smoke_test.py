@@ -136,6 +136,7 @@ def post_renders_and_fits_telegram():
     assert explain in first, "trick not explained on first appearance"
     assert explain not in later, "trick explained again after the first time"
     assert "🇿🇦" in first and "#1" in first
+    assert "@MicroBioTech_bot" in first, "the footer doesn't name the bot"
     assert ">cnn.com<" in first and ">Google Science Fair<" in first
     assert len(first) < config.TELEGRAM_LIMIT
 
