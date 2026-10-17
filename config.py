@@ -22,8 +22,8 @@ CARD_MAX_TOKENS = 2500
 DEEPER_MAX_TOKENS = 2000
 CHECK_MAX_TOKENS = 1500
 
-SOURCE_CHARS = 6000        # how much of a source page the writer may read
-STORED_SOURCE_CHARS = 4000  # how much is kept for "deeper"
+SOURCE_CHARS = 8000        # how much source text the writer may read (all sources together)
+STORED_SOURCE_CHARS = SOURCE_CHARS  # "deeper" reads the same full text
 TELEGRAM_LIMIT = 4096
 
 # Wikipedia asks every bot to name itself and give a way to reach its owner.

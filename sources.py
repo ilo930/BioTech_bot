@@ -69,18 +69,30 @@ def focus(text, limit, names=()):
     return "\n\n".join(k for k in kept if k)[:limit]
 
 
+def share_budget(lengths, limit):
+    """How many characters each source may keep. A short source keeps all of
+    itself and hands what it didn't use to the longer ones — an even split
+    once cut Kiara's CNN article in half and lost her own explanation."""
+    caps, left, todo = [0] * len(lengths), limit, sorted(range(len(lengths)), key=lengths.__getitem__)
+    for n, i in enumerate(todo):
+        caps[i] = min(lengths[i], left // (len(todo) - n))
+        left -= caps[i]
+    return caps
+
+
 def gather(person):
     """Fetch every source for a person. Returns (text, urls).
     Raises SourceTooThin if the words the story depends on are not in them."""
-    share = config.SOURCE_CHARS // len(person["sources"])
     surname = person["name"].split()[-1]
-    chunks, urls = [], []
+    labels, texts, urls = [], [], []
     for src in person["sources"]:
         fetch = fetch_article if src.startswith("http") else fetch_wikipedia
         label, text, url = fetch(src)
-        chunks.append(f"[Source: {label}]\n{focus(text, share, (surname,))}")
+        labels.append(label)
+        texts.append(focus(text, config.SOURCE_CHARS, (surname,)))
         urls.append(url)
-    combined = "\n\n".join(chunks)
+    caps = share_budget([len(t) for t in texts], config.SOURCE_CHARS)
+    combined = "\n\n".join(f"[Source: {l}]\n{t[:c]}" for l, t, c in zip(labels, texts, caps))
     missing = [w for w in person["must_mention"] if w.lower() not in combined.lower()]
     if missing:
         raise SourceTooThin(f"{person['name']}: sources never mention {missing}")

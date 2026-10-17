@@ -65,6 +65,12 @@ def page_trimming_keeps_the_invention():
     assert sources.focus(fair, 5000, ("Nirghin",)) == "Intro.\n\nWon by Kiara Nirghin."
 
 
+def short_sources_hand_space_to_long_ones():
+    assert sources.share_budget([5000, 200], 6000) == [5000, 200]
+    assert sources.share_budget([9000, 200], 6000) == [5800, 200]
+    assert sum(sources.share_budget([9000, 9000, 9000], 6000)) == 6000
+
+
 def news_article_is_read_cleanly():
     page = ("<html><style>.x{color:red}</style><script>var a=1;</script><nav><p>Menu</p></nav>"
             "<p>Using orange peel and avocado skins, the student created a polymer.</p>"
@@ -176,6 +182,7 @@ def live_card():
 
 check("The people list is sound (unique, real tricks, a source each)", people_list_is_sound)
 check("Long Wikipedia pages are trimmed to the invention parts", page_trimming_keeps_the_invention)
+check("Short sources hand their unused space to long ones", short_sources_hand_space_to_long_ones)
 check("News articles are read without menus and scripts", news_article_is_read_cleanly)
 check("A source that no longer describes the invention is caught", thin_sources_are_caught)
 check("A complete card is accepted", complete_card_is_accepted)
