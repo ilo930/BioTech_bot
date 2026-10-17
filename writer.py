@@ -33,7 +33,7 @@ Return ONLY a JSON object with these keys:
 "hook": one sentence that makes you want to read on,
 "problem": 1-2 sentences, what they saw that needed fixing,
 "ingredients": list of 1-6 short strings, what the invention is physically made of,
-"why_it_works": 3-5 sentences, the mechanism step by step,
+"why_it_works": 4-6 sentences. FIRST the concrete details the source gives: what each ingredient contributes, any numbers, the making steps (heating, sun, mixing). THEN the textbook science of why that works. This is the heart of the card — be specific, never vague,
 "what_next": 1-2 sentences, what happened after (prizes, spread, impact),
 "trick_here": 1-2 sentences, how this invention uses the given trick,
 "your_turn": one question that invites the reader to apply the same trick to something new."""
