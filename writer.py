@@ -1,12 +1,13 @@
 """
 writer.py — asks the AI to write one story card from the source text, then
-checks every part is there. A card with a missing part is refused, never sent
-half-empty (MicroDigest once posted bare headlines because of a silent fallback).
+checks every part is there and has it fact-checked (fact_check.py). A card
+with a missing part or an unsupported claim is refused, never sent.
 """
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 import config
+import fact_check
 import llm
 import tricks
 
@@ -20,7 +21,10 @@ CARD_SYSTEM = f"""You write one weekly story for BioTech, a channel that teaches
 
 Hard rules:
 - Facts about the PERSON and the INVENTION (names, ages, dates, places, results) come ONLY from the source text. If the source does not say something, leave it out.
-- The "why it works" part may use well-established textbook science (chemistry, physics, biology) to explain the mechanism, even if the source does not spell it out. Never invent numbers.
+- Ingredients: only materials the source names as part of the invention. Sunlight, heat or time are steps, never ingredients.
+- Keep each ingredient's role exactly as the source gives it. Never move a property from one ingredient to another.
+- "what_next": a hope, plan or "could" in the source stays a hope. Never turn it into something that happened.
+- The "why it works" part may use well-established textbook science to explain how the NAMED ingredients behave, as long as it never contradicts the source. Never invent numbers.
 
 {STYLE_RULES}
 
@@ -54,11 +58,15 @@ class Card(BaseModel):
         return v
 
 
-def card_prompt(person, source_text):
+def card_prompt(person, source_text, fix=()):
     t = tricks.TRICKS[person["trick"]]
-    return (f"Person: {person['name']}\n"
-            f"Trick to explain: {t['name']} — {t['explain']}\n\n"
-            f"SOURCE TEXT:\n{source_text}")
+    prompt = (f"Person: {person['name']}\n"
+              f"Trick to explain: {t['name']} — {t['explain']}\n\n"
+              f"SOURCE TEXT:\n{source_text}")
+    if fix:
+        prompt += ("\n\nA fact-checker rejected your previous card. Do not repeat these "
+                   "problems:\n" + "\n".join(f"- {p}" for p in fix))
+    return prompt
 
 
 def validate(raw):
@@ -73,11 +81,18 @@ def validate(raw):
 
 
 def write_card(person, source_text):
-    """Two tries at a complete card; None if both come back incomplete."""
-    for attempt in (1, 2):
-        reply = llm.chat(CARD_SYSTEM, card_prompt(person, source_text),
-                         config.CARD_MAX_TOKENS, label=f" card#{attempt}")
+    """A complete card that passed the fact-check, or None.
+    Up to three tries; each retry is told what the checker rejected."""
+    fix = []
+    for attempt in (1, 2, 3):
+        reply = llm.chat(CARD_SYSTEM, card_prompt(person, source_text, fix),
+                         config.CARD_MAX_TOKENS, temperature=0.2, label=f" card#{attempt}")
         card = validate(llm.extract_json(reply))
-        if card:
+        if not card:
+            continue
+        found = fact_check.problems(card, source_text)
+        if found == []:
+            print(f"[writer] card #{attempt} passed the fact-check")
             return card
+        fix = found or fix
     return None

@@ -1,7 +1,7 @@
 # Architecture
 
 ## What this project is
-BioTech: a Telegram channel that posts one real inventor's story a week —
+BioTech: a Telegram bot that sends you one real inventor's story a week —
 what the invention is made of, why it works, and the reusable "trick" behind it —
 so the reader builds a toolbox for inventing. A DM bot answers `deeper` and `tricks`.
 
@@ -11,9 +11,11 @@ Pipeline: each weekly step is one file that hands its result to the next.
 
 ## Who feeds whom
 ```
-people.py ─► sources.py ─► writer.py ─► card_format.py ─► telegram.py ─► channel
- (who next)   (Wikipedia /   (AI writes,   (the post's look)
-              news text)      card checked)
+people.py ─► sources.py ─► writer.py ◄─► fact_check.py
+ (who next)   (Wikipedia /   (AI writes)    (2nd AI: claims vs source)
+              news text)         │
+                                 ▼
+                          card_format.py ─► telegram.py ─► your DM
                     story_bot.py wires them; state.py remembers who was posted
 DM ─► poller.py ─► reply_core.py ─► deeper (AI + stored source) / tricks (tricks.py + posted.json)
 ```
@@ -24,7 +26,8 @@ DM ─► poller.py ─► reply_core.py ─► deeper (AI + stored source) / tr
 | people.py | The curated list: real people, their sources, their trick, must-mention words |
 | tricks.py | The 8 invention moves and their plain explanations |
 | sources.py | Fetches Wikipedia pages and news articles; refuses sources that don't describe the invention |
-| writer.py | The AI prompt; checks every part of the card is there |
+| writer.py | The AI prompt; checks every part of the card is there; retries with the checker's notes |
+| fact_check.py | Second AI pass: lists every claim the source doesn't back up; any → card refused |
 | card_format.py | Turns a card into the Telegram post — all the post's look lives here |
 | llm.py | Talks to Groq (free AI), retries when rate-limited |
 | telegram.py | Sends one message (prints it instead in dry-run) |
@@ -40,6 +43,9 @@ DM ─► poller.py ─► reply_core.py ─► deeper (AI + stored source) / tr
 - Locally: `GROQ_API_KEY=… DRY_RUN=1 .venv/bin/python story_bot.py`
 
 ## Decisions
+- Fact-check pass added (2026-10-17). The first real card gave the orange's pectin to the avocado,
+  listed "water" as an ingredient and invented farm trials. Prompt rules alone weren't enough.
+- Posts go to FH's private chat with the bot, no channel (his call 2026-10-17). TELEGRAM_CHAT_ID = his user id.
 - Sources carry `must_mention` words. (Wikipedia rewrote Kiara Nirghin's page in 2026 and dropped the
   orange peel; a "Gitanjali Rao" title pointed to a different person. Without the gate the AI would invent.)
 - News URLs allowed as sources next to Wikipedia, for inventors Wikipedia covers badly.

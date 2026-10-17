@@ -20,6 +20,7 @@ GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 CARD_MAX_TOKENS = 2500
 DEEPER_MAX_TOKENS = 2000
+CHECK_MAX_TOKENS = 1500
 
 SOURCE_CHARS = 6000        # how much of a source page the writer may read
 STORED_SOURCE_CHARS = 4000  # how much is kept for "deeper"

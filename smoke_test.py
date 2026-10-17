@@ -98,6 +98,28 @@ def incomplete_card_is_refused():
     assert writer.validate({}) is None
 
 
+def fact_check_blocks_unsupported_cards():
+    import llm
+    real, prompts = llm.chat, []
+
+    def fake_ai(verdicts):
+        def chat(system, prompt, *a, **k):
+            prompts.append(prompt)
+            if "fact-checker" in system:
+                return json.dumps({"unsupported": verdicts.pop(0)})
+            return json.dumps(GOOD)
+        return chat
+    try:
+        llm.chat = fake_ai([["avocado given the pectin"]] * 3)
+        assert writer.write_card(people.PEOPLE[0], "src") is None, "a rejected card got through"
+        prompts.clear()
+        llm.chat = fake_ai([["field trials invented"], []])
+        assert writer.write_card(people.PEOPLE[0], "src") is not None
+        assert "field trials invented" in prompts[2], "the retry was not told what was wrong"
+    finally:
+        llm.chat = real
+
+
 def post_renders_and_fits_telegram():
     card, kiara = writer.validate(GOOD), people.PEOPLE[0]
     url = ["https://edition.cnn.com/2016/08/09/africa/x/index.html",
@@ -158,6 +180,7 @@ check("News articles are read without menus and scripts", news_article_is_read_c
 check("A source that no longer describes the invention is caught", thin_sources_are_caught)
 check("A complete card is accepted", complete_card_is_accepted)
 check("A card with a missing part is refused", incomplete_card_is_refused)
+check("The fact-checker blocks a card with unsupported claims", fact_check_blocks_unsupported_cards)
 check("The post renders, fits Telegram, explains a trick only once", post_renders_and_fits_telegram)
 check("The once-a-week gate works", weekly_gate_works)
 check("The bot answers 'tricks', 'deeper' and anything else", bot_replies_work)
