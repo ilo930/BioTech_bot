@@ -22,5 +22,11 @@
     "name": "William Kamkwamba",
     "trick": "use_whats_local",
     "date": "2026-11-08T14:51:29.300018+00:00"
+  },
+  {
+    "key": "hedy_lamarr",
+    "name": "Hedy Lamarr",
+    "trick": "borrow_from_elsewhere",
+    "date": "2026-11-20T16:47:09.334088+00:00"
   }
 ]
